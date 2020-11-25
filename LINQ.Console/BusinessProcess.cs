@@ -12,7 +12,8 @@ namespace LINQ.ConsoleApp
 
         //esiste nel framework un delegate già definito che si chiama EventHandler (formato standard per creare eventi senza dover definire il delegate, lo è già lui)
         // eventargs è un oggetto del framework per paggare eventuali parametri
-        public event EventHandler StartedCore; 
+        public event EventHandler StartedCore;
+        public event EventHandler<ProcessEndEventArgs> CompletedCore; // come generics do' una classe che eredita da event args
         public event ProcessStarted Started;
         public event ProcessCompleted Completed;
         public void ProcessData()
@@ -22,13 +23,17 @@ namespace LINQ.ConsoleApp
             Console.WriteLine("Porcess Started");
             // sollevo evento started
             if (Started!=null) // guardia: inutile sollevare evento che nessuno ha sottoscritto
-            Started(); 
+            Started();
+            if (StartedCore != null)
+                StartedCore(this, EventArgs.Empty); // qui non sono riusita a passare parametri, devo usare la versione con i generics
             //qualcuno se lo deve gestire sto evento
 
             Thread.Sleep(3000); //attesa
             Console.WriteLine("Porcess Completed");
             if (Completed!= null)
-            Completed(5000);  
+            Completed(5000);
+            if (CompletedCore != null)
+                CompletedCore(this, new ProcessEndEventArgs { Duration = 5000 }); 
         }
     }
 }

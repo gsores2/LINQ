@@ -9,6 +9,7 @@ namespace Demo_LINQToObject
     public class Esercizio
     {
 
+        #region === CREAZIONE LISTE PRODOTTI E ORDINI ===
         // Creazione liste 
         public static List<Product> CreateProductList()
         {
@@ -54,7 +55,9 @@ namespace Demo_LINQToObject
 
             return (lista);
         }
+        #endregion
 
+        #region == ESECUZIONE DIFFERITA E IMMEDIATA ===
 
         // Esecuzione immediata e ritardata
         public static void DeferredExecution()
@@ -121,7 +124,9 @@ namespace Demo_LINQToObject
 
            
         }
+        #endregion
 
+        #region === METHOD O QUERY SYNTAX ===
         // Sintassi
         public static void Syntax()
         {
@@ -149,6 +154,11 @@ namespace Demo_LINQToObject
 
         }
 
+
+        #endregion
+
+
+        #region === OPERATORI ===
         // Operatori
         public static void Operators()
         {
@@ -190,18 +200,6 @@ namespace Demo_LINQToObject
             #endregion
 
 
-            #region === ELEMENT ===
-            // Element
-            Console.WriteLine("Esempio Element: ");
-            int[] empty = { };
-            var el1 = empty.FirstOrDefault();// se non do default allora mi dà eccezione 
-            Console.WriteLine( el1);
-
-            var p1 = productList.ElementAt(0).Name; // inizia a contare da 0
-            Console.WriteLine(p1);
-
-            #endregion
-
 
             #region === ORDINAMENTO===
             // Ordinamento di prodotti per nome e prezzo
@@ -234,12 +232,40 @@ namespace Demo_LINQToObject
             }
             #endregion
 
+
+            #region === DISTINCT ===
+  
+            //var products = new List<Product2>
+            //{
+            //new Product2 { ID = 1, ProductCode = "P1" },
+            //new Product2 { ID = 2, ProductCode = "P2" },
+            //new Product2 { ID = 3, ProductCode = "P3" }
+            //};
+
+            //int resultCoun1 = products.Select(s => s).Distinct().Count();
+            //int resultCoun2 = products.Select(s => new {s.ID, s.ProductCode }).Distinct().Count(); 
+          
+
+            #endregion
             #region === QUANTIFICATIORI ===
             //Quantificatori 
             var hasProductWithT = productList.Any(p => p.Name.StartsWith("T")); //mi aspetto mi ritorni un true
             var allProductsWithT = productList.All(p => p.Name.StartsWith("T")); ; //mi aspetto false
             Console.WriteLine("\r\nCi sono prodotti che iniziano con la T? {0}", hasProductWithT);
             Console.WriteLine("Tutti i prodotti iniziano con la T? {0}", allProductsWithT);
+            #endregion
+
+
+            #region === ELEMENT ===
+            // Element
+            Console.WriteLine("Esempio Element: ");
+            int[] empty = { };
+            var el1 = empty.FirstOrDefault();// se non do default allora mi dà eccezione 
+            Console.WriteLine(el1);
+
+            var p1 = productList.ElementAt(0).Name; // inizia a contare da 0
+            Console.WriteLine(p1);
+
             #endregion
 
 
@@ -336,9 +362,14 @@ namespace Demo_LINQToObject
 
             #endregion
 
+
+
+
+            // 26/11
+
             #region === JOIN ===
 
-            // sempre inner join in linq
+            // sempre inner join in linq PIU O MENO
             // recuperare i prodotti che hanno ordini
             // voglio vedere: Nome Prodtto - Id Ordine - Quantità
 
@@ -458,5 +489,7 @@ namespace Demo_LINQToObject
             #endregion
 
         }
+
+        #endregion 
     }
 }

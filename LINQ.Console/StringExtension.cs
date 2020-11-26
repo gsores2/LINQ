@@ -4,9 +4,9 @@ using System.Text;
 
 namespace LINQ.ConsoleApp
 {
-    public static class StringExtension //classe con metodi di estensione alla stringa
+    public static class StringExtension //classe con metodi di estensione alla stringa 
     {
-        
+        // DEVONO ESSERE STATIC CLASSE E METODO DEGLI EXTENSION METHODS!!!!!!!!!!!!!!!
         public static double ToDouble( this string value) // THIS STRING PERCHE' STO ESTENDENDO STRING
         {
            double.TryParse(value, out double convertedValue); // se non va a buon fine converte value è 0 di default

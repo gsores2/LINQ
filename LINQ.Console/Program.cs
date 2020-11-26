@@ -14,7 +14,7 @@ namespace LINQ.ConsoleApp
         #region Delegates
        
         public delegate int Sum(int val1, int val2); // è un nuovo tipo di dato (sum), come se osse una classe
-        public static int PrimaSomma(int valore1, int valore2)
+        public static int PrimaSomma(int valore1, int valore2) //METODO CHE PUO' ESSERE ASSEGNATO AL DELEGATE SUM 
         {
             return valore1 + valore2;
         }

@@ -57,7 +57,6 @@ namespace Demo_LINQToObject
 
 
         // Esecuzione immediata e ritardata
-
         public static void DeferredExecution()
         {
             var productList = CreateProductList();
@@ -171,7 +170,7 @@ namespace Demo_LINQToObject
 
 
 
-            #region OFTYPE
+            #region === OFTYPE ===
             //Filtro OfType, mi serve arraylist perchè abbia senso
             var list = new ArrayList();
             list.Add(productList); // posso mettere una lista dentro la Lista
@@ -191,7 +190,7 @@ namespace Demo_LINQToObject
             #endregion
 
 
-            #region ELEMENT
+            #region === ELEMENT ===
             // Element
             Console.WriteLine("Esempio Element: ");
             int[] empty = { };
@@ -204,7 +203,7 @@ namespace Demo_LINQToObject
             #endregion
 
 
-            #region ORDINAMENTO
+            #region === ORDINAMENTO===
             // Ordinamento di prodotti per nome e prezzo
             Console.WriteLine("\r\nOrdinamento:\r\n");
 
@@ -235,7 +234,7 @@ namespace Demo_LINQToObject
             }
             #endregion
 
-            #region QUANTIFICATIORI
+            #region === QUANTIFICATIORI ===
             //Quantificatori 
             var hasProductWithT = productList.Any(p => p.Name.StartsWith("T")); //mi aspetto mi ritorni un true
             var allProductsWithT = productList.All(p => p.Name.StartsWith("T")); ; //mi aspetto false
@@ -244,7 +243,7 @@ namespace Demo_LINQToObject
             #endregion
 
 
-            #region GROUP BY
+            #region === GROUP BY ===
 
             //GroupBy
 
@@ -269,7 +268,7 @@ namespace Demo_LINQToObject
                 foreach (var item in o) // poi ciclo dentro alla singola chiaver
                 { // int lo usa per raggruppare (chiave) --> nella classe Igrouping sta scritto che nel foreach ignoro la chiave
 
-                    Console.WriteLine($"\t {item.ProductId } - {item.ProductId}");
+                    Console.WriteLine($"\t {item.ProductId } - {item.Quantity}");
                 }
             }
 
@@ -290,16 +289,173 @@ namespace Demo_LINQToObject
                 foreach (var item in o) // poi ciclo dentro alla singola chiaver
                 { // int lo usa per raggruppare (chiave) --> nella classe Igrouping sta scritto che nel foreach ignoro la chiave
 
-                    Console.WriteLine($"\t {item.ProductId } - {item.ProductId}");
+                    Console.WriteLine($"\t {item.ProductId } - {item.Quantity}");
                 }
             }
 
-            #endregion 
+            #endregion
 
 
+            #region === GROUPBY con funzione di aggregazione ===
+
+            // raggruppare ordini per prodotto e ricavare la somma delle quantità per ogni ordine
+            // per ogni prodotto voglio sapere quanti ne sono stati ordinati
 
 
+            // METHOD SYNTAX
+            var sumQuantityByProduct =
+                orderList
+                .GroupBy(p => p.ProductId) //li ragggruppo per product id
+                .Select(lista => new { 
+                    ID = lista.Key, // ho una key che è il mio product id
+                    Quantities = lista.Sum(p => p.Quantity) // poi mi ritorna somma di ordini per quel prodotto
+                    });
 
+            Console.WriteLine("\r\n GroupBy con funzione di aggregazione:\r\n");
+            Console.WriteLine("Method Syntax:\r\n");
+            foreach (var item in sumQuantityByProduct)
+            {
+                Console.WriteLine("{0} - {1}", item.ID, item.Quantities);
+            }
+
+
+            //QUERY SYNTAX
+
+            var sumByProduct2 =
+                from o in orderList
+                group o by o.ProductId into list2
+                select new { ID = list2.Key, Quantities = list2.Sum(x => x.Quantity) };
+
+
+            Console.WriteLine("\r\nQuery Syntax:\r\n");
+            foreach (var item in sumByProduct2)
+            {
+                Console.WriteLine("{0} - {1}", item.ID, item.Quantities);
+            }
+
+
+            #endregion
+
+            #region === JOIN ===
+
+            // sempre inner join in linq
+            // recuperare i prodotti che hanno ordini
+            // voglio vedere: Nome Prodtto - Id Ordine - Quantità
+
+            Console.WriteLine("\r\nJoin:\r\n:");
+
+            //MethodSYNTAX
+            Console.WriteLine("Method Syntax:\r\n");
+
+            var joinList = productList
+                .Join(orderList, //prima la lista con cui faccio join
+                p => p.ID, //chiave prima lista
+                o => o.ProductId, // chiave seconda lista (sto facendo JOIN)
+                (p,o)=> new // parametri lambda sono le due liste
+                { NomeProdotto = p.Name,
+                  OrderID = o.ID, 
+                  Quantita = o.Quantity
+                }
+                ); //risultato 
+
+            foreach (var item in joinList)
+            {
+                Console.WriteLine("{0} - {1} - {2}", item.NomeProdotto, item.OrderID, item.Quantita);
+            }
+
+            //QuerySYNTAX
+            Console.WriteLine("\r\nQuery Syntax:\r\n");
+
+            var joinList2 =
+                from p in productList
+                join o in orderList
+                on p.ID equals o.ProductId
+                select new
+                {
+                    Nome = p.Name,
+                    OrderId = o.ID,
+                    Quantita = o.Quantity
+                };
+            foreach (var item in joinList2)
+            {
+                Console.WriteLine("{0} - {1} - {2}", item.Nome, item.OrderId, item.Quantita);
+            }
+
+            #endregion
+
+            #region === GROUP JOIN ===
+            //recuperare gli ordini per prodoto e somma quantità
+            // raggruppo e faccio join per sapere i nomi dei prodotti 
+
+            var groupJoinList = productList
+                .GroupJoin(orderList,
+                p => p.ID,
+                o => o.ProductId, // se hanno id diversi li vedo diversi (se non trova corrispondenza id, quando fa la somma mette valore di default)
+                (p, o) =>
+                new
+                { //raggruppamento avviene per stesso campo su cui faccio la join 
+
+                    Prodotto = p.Name, // UQI USA P CHE SONO TUTTI I PRODOTTI
+                  
+                    Quantità = o.Sum(o => o.Quantity) // ome join ma con aggregazione (SFRUTTA LA CONDIZIONE DI JOIN SOLO PER FARE LA SOMMA, NON PER PRENDERE I NOMI)
+              
+                
+                }
+                );
+
+            Console.WriteLine("\r\nGroup Join:\r\n");
+            Console.WriteLine("Method Syntax:\r\n");
+            foreach (var item in groupJoinList)
+            {
+                Console.WriteLine("{0} - {1}", item.Prodotto, item.Quantità); //mi vede come diverse istanze con id diverso
+            }
+
+
+            Console.WriteLine("\r\nQuery Syntax:\r\n");
+            //query syntax
+            var groupJoinList2 =
+                from p in productList
+                join o in orderList
+                on p.ID equals o.ProductId
+              
+                into gr //fa una join e la metto in gr( che gestisce solo le relazioni)
+                //SE PRIMA DI GR METTO UN SELECT INTO POSSO USARLA COME TABELA, altimenti ho i risultati di quello che ho fatto prima 
+                // qui gr ha tutto ciò che fa da legame tra prouct list e order list vista dal ppunto di vista di order
+                // quindi gr vede solo la seconda tabella
+
+                // gr DIVERSO SE USO JOIN O GROYUP BY 
+                select new
+                {
+                    Prodotto = p.Name, // se volessi fare sum su p dovrei scambire le tabelle
+                    Quantita = gr.Sum(o => o.Quantity) // gr ha le associazioni, quindi capisce le somme
+                };
+
+            foreach (var item in groupJoinList2)
+            {
+                Console.WriteLine("{0} - {1}", item.Prodotto, item.Quantita);
+            }
+
+
+            // se invece volessi vedere solo la lista con i prodotti che hanno gli ordini
+            var lista4 =
+                from o in orderList
+                group o by o.ProductId // raggruppo per product id e proietto in lista temporanea
+                into gr // temporanea
+                select new
+                {
+                    ProdottoId = gr.Key,
+                    Quantità = gr.Sum(o => o.Quantity)
+                }
+                into gr1 // proietto effettivamente in g1 la nova tabella con prodotto id e la somma delle quantità (ho preso solo order)
+                join p in productList
+                on gr1.ProdottoId equals p.ID
+                select new { p.Name, gr1.Quantità };
+
+            foreach (var item in lista4)
+            {
+                Console.WriteLine("{0} - {1}", item.Name, item.Quantità);
+            }
+            #endregion
 
         }
     }
